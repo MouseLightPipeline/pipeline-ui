@@ -65,7 +65,8 @@ interface IPageLayoutState {
     buildVersion?: number;
     loadedBuildVersion?: number;
     processId?: number;
-    isServerConnected?: boolean;
+    isInternalApiConnected?: boolean;
+    isSocketIoServerConnected?: boolean;
     isSidebarExpanded?: boolean;
     thumbsHostname?: string;
     thumbsPort?: number;
@@ -85,7 +86,8 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
             buildVersion: null,
             loadedBuildVersion: null,
             processId: null,
-            isServerConnected: false,
+            isInternalApiConnected: false,
+            isSocketIoServerConnected: false,
             isSidebarExpanded: !PreferencesManager.Instance.IsSidebarCollapsed,
             thumbsHostname: "",
             thumbsPort: 80,
@@ -114,10 +116,15 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
     }
 
     public render() {
-        if (!this.state.isServerConnected) {
+        if (!this.state.isInternalApiConnected) {
             return (
-                <Message warning style={{margin: "20px"}}>The server is no longer responding. The service may be down.
+                <Message warning style={{margin: "20px"}}>The server is not responding. The service may be down.
                     Will continue to retry the connection.</Message>);
+        }
+
+        if (!this.state.isSocketIoServerConnected) {
+            return (
+                <Message style={{margin: "20px"}}>Establishing connection...</Message>);
         }
 
         const width = this.state.isSidebarExpanded ? 199 : 79;
@@ -221,10 +228,10 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
     public onServiceConnectionStateChanged(isConnected: boolean) {
         if (isConnected) {
             this._internalApi.start();
-            this.setState({isServerConnected: true});
+            this.setState({isSocketIoServerConnected: true});
         } else {
             this._internalApi.kill();
-            this.setState({isServerConnected: false});
+            this.setState({isSocketIoServerConnected: false, isInternalApiConnected: false});
         }
     }
 
@@ -244,6 +251,8 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
         if (!this.state.loadedBuildVersion) {
             this.setState({loadedBuildVersion: message.buildVersion});
         }
+
+        this.setState({isInternalApiConnected: true});
 
         this._realTimeApi.connect(message.socketIoPortOffset).then();
     }

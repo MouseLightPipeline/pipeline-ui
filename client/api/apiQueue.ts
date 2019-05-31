@@ -41,6 +41,10 @@ export class ApiQueue {
         this._basePath = basePath || "";
     }
 
+    public get IsConnected(): boolean {
+        return !this._isKilled;
+    }
+
     public start(): boolean {
         if (this._isKilled) {
             this.createQueue();

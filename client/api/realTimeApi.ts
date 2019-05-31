@@ -1,4 +1,5 @@
 import * as socketIOClient from "socket.io-client";
+import {port} from "_debugger";
 
 export interface IRealTimeApiDelegate {
     onServiceConnectionStateChanged?(isConnected: boolean): void;
@@ -15,7 +16,11 @@ export class RealTimeApi {
     public async connect(portOffset: number = 0) {
         try {
             const loc = window.location;
-            const url = `${loc.protocol}//${loc.hostname}:${parseInt(loc.port) + portOffset}`;
+
+            const port = parseInt(loc.port);
+            const portString = isNaN(port) ? "" : `:${port + portOffset}`;
+
+            const url = `${loc.protocol}//${loc.hostname}${portString}`;
             this._socket = socketIOClient(url);
 
             this._socket.on("connect", () => this.onServiceConnectionStateChanged(true));

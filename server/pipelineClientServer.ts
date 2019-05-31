@@ -83,6 +83,7 @@ function startSocketIOServer(server = null) {
     const io = require("socket.io")(server);
 
     io.on("connection", (socket) => {
+        debug("socket.io connection");
         socket.on("stopMicroscopeAcquisition", () => {
         });
         socket.on("restartHubProxy", () => {

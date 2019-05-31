@@ -8,6 +8,8 @@ ADD ./package.json .
 
 ADD ./yarn.lock .
 
+ADD ./docker-entry.sh .
+
 RUN yarn install
 
 ADD ./public/*.* ./public/
@@ -20,6 +22,6 @@ RUN usermod -a -G mousebrainmicro mluser
 
 USER mluser
 
-CMD ["node", "server/pipelineClientServer.js"]
+CMD ["./docker-entry.sh"]
 
 EXPOSE  3100
