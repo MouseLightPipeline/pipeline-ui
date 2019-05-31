@@ -21,7 +21,7 @@ interface IProjectTableProps {
 
     updateProject?(project: IProject): any;
     duplicateProject?(id: string): any;
-    deleteProject?(id: string): any;
+    archiveProject?(id: string): any;
 }
 
 interface IProjectTableState {
@@ -162,20 +162,20 @@ export class ProjectTable extends React.Component<IProjectTableProps, IProjectTa
     }
 
     private onCompleteDeleteProject = (data) => {
-        if (data.deleteProject.error) {
-            toast.error(toastError("Delete", data.deleteProject.error), {autoClose: false});
+        if (data.archiveProject.error) {
+            toast.error(toastError("Archive", data.archiveProject.error), {autoClose: false});
         } else {
             if (PreferencesManager.Instance.PreferredProjectId === this.state.selectedProject.id) {
                 this.setState({selectedProject: null});
                 PreferencesManager.Instance.PreferredProjectId = AllProjectsId;
             }
 
-            toast.success(toastSuccess("Delete"), {autoClose: 3000});
+            toast.success(toastSuccess("Archive"), {autoClose: 3000});
         }
     };
 
     private onDeleteProjectError = (error) => {
-        toast.error(toastError("Delete", error), {autoClose: false});
+        toast.error(toastError("Archive", error), {autoClose: false});
     };
 
     private onClearDeleteConfirmation() {
@@ -186,23 +186,23 @@ export class ProjectTable extends React.Component<IProjectTableProps, IProjectTa
         return (
             <Mutation mutation={DeleteProjectMutation} onCompleted={this.onCompleteDeleteProject}
                       onError={this.onDeleteProjectError}
-                      update={(cache, {data: {deleteProject: {id}}}) => {
+                      update={(cache, {data: {archiveProject: {id}}}) => {
                           const data: any = cache.readQuery({query: BaseQuery});
                           cache.writeQuery({
                               query: BaseQuery,
                               data: Object.assign(data, {projects: data.projects.filter(t => t.id !== id)})
                           });
                       }}>
-                {(deleteProject) => {
+                {(archiveProject) => {
                     if (!this.state.isDeleteDialogShown) {
                         return null;
                     }
                     return (
-                        <Confirm open={this.state.isDeleteDialogShown} header="Delete Pipeline"
-                                 content={`Are you sure you want to delete ${this.state.selectedProject.name} as a pipeline?`}
-                                 confirmButton="Delete" onCancel={() => this.onClearDeleteConfirmation()}
+                        <Confirm open={this.state.isDeleteDialogShown} header="Archive Pipeline"
+                                 content={`Are you sure you want to archive ${this.state.selectedProject.name}?`}
+                                 confirmButton="Archive" onCancel={() => this.onClearDeleteConfirmation()}
                                  onConfirm={() => {
-                                     deleteProject({variables: {id: this.state.selectedProject.id}});
+                                     archiveProject({variables: {id: this.state.selectedProject.id}});
                                      this.setState({isDeleteDialogShown: false});
                                  }}/>
                     )
@@ -218,8 +218,6 @@ export class ProjectTable extends React.Component<IProjectTableProps, IProjectTa
         const disabled = this.state.selectedProject === null;
 
         const disabled_active = disabled || this.state.selectedProject.is_processing;
-
-        const disabled_stages = disabled_active || this.state.selectedProject.stages.length > 0;
 
         return (
             <Menu size="mini" style={{borderBottom: "none", borderRadius: 0, marginBottom: 0, boxShadow: "none"}}>
@@ -250,7 +248,7 @@ export class ProjectTable extends React.Component<IProjectTableProps, IProjectTa
                     PreferencesManager.Instance.PreferredProjectId = AllProjectsId;
                 }}/>
                 <Menu.Menu position="right">
-                    <MenuItem size="mini" content="Delete" icon="trash" disabled={disabled_stages}
+                    <MenuItem size="mini" content="Archive" icon="trash" disabled={disabled_active}
                               onClick={(evt) => this.onClickDeleteProject(evt)}/>
                 </Menu.Menu>
             </Menu>

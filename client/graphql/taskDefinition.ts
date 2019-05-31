@@ -62,7 +62,7 @@ ${TaskDefinitionFragment}
 `;
 
 export const DeleteTaskDefinitionMutation = gql`mutation DeleteTaskDefinition($id: String!) {
-    deleteTaskDefinition(id: $id) {
+    archiveTaskDefinition(id: $id) {
         id
         error
     }

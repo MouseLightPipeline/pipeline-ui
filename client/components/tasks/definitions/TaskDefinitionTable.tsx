@@ -141,16 +141,16 @@ export class TaskDefinitionsTable extends React.Component<ITaskDefinitionsTableP
     }
 
     private onCompleteDeleteDefinition = (data) => {
-        if (data.deleteTaskDefinition.error) {
-            toast.error(toastError("Delete", data.deleteTaskDefinition.error), {autoClose: false});
+        if (data.archiveTaskDefinition.error) {
+            toast.error(toastError("Archive", data.archiveTaskDefinition.error), {autoClose: false});
         } else {
             this.setState({selectedTask: null});
-            toast.success(toastSuccess("Delete"), {autoClose: 3000});
+            toast.success(toastSuccess("Archive"), {autoClose: 3000});
         }
     };
 
     private onDeleteDefinitionError = (error) => {
-        toast.error(toastError("Delete", error), {autoClose: false});
+        toast.error(toastError("Archive", error), {autoClose: false});
     };
 
     private onClearDeleteConfirmation() {
@@ -161,23 +161,23 @@ export class TaskDefinitionsTable extends React.Component<ITaskDefinitionsTableP
         return (
             <Mutation mutation={DeleteTaskDefinitionMutation} onCompleted={this.onCompleteDeleteDefinition}
                       onError={this.onDeleteDefinitionError}
-                      update={(cache, {data: {deleteTaskDefinition: {id}}}) => {
+                      update={(cache, {data: {archiveTaskDefinition: {id}}}) => {
                           const data: any = cache.readQuery({query: BaseQuery});
                           cache.writeQuery({
                               query: BaseQuery,
                               data: Object.assign(data, {taskDefinitions: data.taskDefinitions.filter(t => t.id !== id)})
                           });
                       }}>
-                {(deleteTaskDefinition) => {
+                {(archiveTaskDefinition) => {
                     if (!this.state.isDeleteDialogShown) {
                         return null;
                     }
                     return (
-                        <Confirm open={this.state.isDeleteDialogShown} header="Delete Task"
-                                 content={`Are you sure you want to delete ${this.state.selectedTask.name} as a task?`}
-                                 confirmButton="Delete" onCancel={() => this.onClearDeleteConfirmation()}
+                        <Confirm open={this.state.isDeleteDialogShown} header="Archive Task"
+                                 content={`Are you sure you want to archive ${this.state.selectedTask.name}?`}
+                                 confirmButton="Archive" onCancel={() => this.onClearDeleteConfirmation()}
                                  onConfirm={() => {
-                                     deleteTaskDefinition({variables: {id: this.state.selectedTask.id}});
+                                     archiveTaskDefinition({variables: {id: this.state.selectedTask.id}});
                                      this.setState({isDeleteDialogShown: false});
                                  }}/>
                     )
@@ -227,7 +227,7 @@ export class TaskDefinitionsTable extends React.Component<ITaskDefinitionsTableP
                         <MenuItem size="mini" content="Duplicate" icon="clone" disabled={disabled}
                                   onClick={(evt) => this.onDuplicateTask(evt)}/>
                         <Menu.Menu position="right">
-                            <MenuItem size="mini" content="Delete" icon="trash" disabled={disabled_delete}
+                            <MenuItem size="mini" content="Archive" icon="trash" disabled={disabled_delete}
                                       onClick={(evt) => this.onClickDeleteTaskDefinition(evt)}/>
                         </Menu.Menu>
                     </Menu>

@@ -41,7 +41,7 @@ ${TaskRepositoryFragment}
 `;
 
 export const DeleteTaskRepositoryMutation = gql`mutation DeleteTaskRepository($id: String!) {
-    deleteTaskRepository(id: $id) {
+    archiveTaskRepository(id: $id) {
         id
         error
     }

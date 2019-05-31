@@ -112,7 +112,7 @@ ${PipelineStageRequiredFieldsFragment}
 
 export const DeletePipelineStageMutation = gql`
   mutation DeletePipelineStageMutation($id: String!) {
-    deletePipelineStage(id: $id) {
+    archivePipelineStage(id: $id) {
         id
         error
     }

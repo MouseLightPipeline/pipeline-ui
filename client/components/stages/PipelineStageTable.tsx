@@ -4,7 +4,7 @@ import {Mutation} from "react-apollo";
 import ReactTable from "react-table";
 import {toast} from "react-toastify";
 
-import {IPipelineStage, IPipelineStageTileStatus} from "../../models/pipelineStage";
+import {IPipelineStage} from "../../models/pipelineStage";
 import {AllProjectsId} from "../helpers/ProjectMenu";
 import {ITaskDefinition} from "../../models/taskDefinition";
 import {IProject} from "../../models/project";
@@ -83,19 +83,19 @@ export class PipelineStageTable extends React.Component<IPipelineStageTableProps
     }
 
     private onCompleteDeletePipelineStage = (data) => {
-        if (data.deletePipelineStage.error) {
-            toast.error(toastError("Delete", data.deletePipelineStage.error), {autoClose: false});
+        if (data.archivePipelineStage.error) {
+            toast.error(toastError("Archive", data.archivePipelineStage.error), {autoClose: false});
         } else {
-            if (PreferencesManager.Instance.PreferredProjectId === this.state.selectedStage.id) {
+            if (this.state.selectedStage && PreferencesManager.Instance.PreferredStageId === this.state.selectedStage.id) {
                 this.setState({selectedStage: null});
             }
 
-            toast.success(toastSuccess("Delete"), {autoClose: 3000});
+            toast.success(toastSuccess("Archive"), {autoClose: 3000});
         }
     };
 
     private onDeletePipelineStageError = (error) => {
-        toast.error(toastError("Delete", error), {autoClose: false});
+        toast.error(toastError("Archive", error), {autoClose: false});
     };
 
     private onClearDeleteConfirmation() {
@@ -106,23 +106,23 @@ export class PipelineStageTable extends React.Component<IPipelineStageTableProps
         return (
             <Mutation mutation={DeletePipelineStageMutation} onCompleted={this.onCompleteDeletePipelineStage}
                       onError={this.onDeletePipelineStageError}
-                      update={(cache, {data: {deletePipelineStage: {id}}}) => {
+                      update={(cache, {data: {archivePipelineStage: {id}}}) => {
                           const data: any = cache.readQuery({query: BaseQuery});
                           cache.writeQuery({
                               query: BaseQuery,
                               data: Object.assign(data, {pipelineStages: data.pipelineStages.filter(t => t.id !== id)})
                           });
                       }}>
-                {(deletePipelineStage) => {
+                {(archivePipelineStage) => {
                     if (!this.state.isDeleteDialogShown) {
                         return null;
                     }
 
-                    return (<Confirm open={this.state.isDeleteDialogShown} header="Delete Stage"
-                                     content={`Are you sure you want to delete ${this.state.selectedStage.name} as a stage?`}
-                                     confirmButton="Delete" onCancel={() => this.onClearDeleteConfirmation()}
+                    return (<Confirm open={this.state.isDeleteDialogShown} header="Archive Stage"
+                                     content={`Are you sure you want to archive ${this.state.selectedStage.name}?`}
+                                     confirmButton="Archive" onCancel={() => this.onClearDeleteConfirmation()}
                                      onConfirm={() => {
-                                         deletePipelineStage({variables: {id: this.state.selectedStage.id}});
+                                         archivePipelineStage({variables: {id: this.state.selectedStage.id}});
                                          this.setState({isDeleteDialogShown: false});
                                      }}/>
                     )
@@ -164,7 +164,7 @@ export class PipelineStageTable extends React.Component<IPipelineStageTableProps
                 <TableSelectionHeader item={this.state.selectedStage}
                                       onClick={() => this.setState({selectedStage: null})}/>
                 <Menu.Menu position="right">
-                    <MenuItem size="mini" content="Delete" icon="trash" disabled={disabled_active}
+                    <MenuItem size="mini" content="Archive" icon="trash" disabled={disabled_active}
                               onClick={(evt) => this.onClickDeletePipelineStage(evt)}/>
                 </Menu.Menu>
             </Menu>
@@ -185,13 +185,13 @@ export class PipelineStageTable extends React.Component<IPipelineStageTableProps
         if (this.state.selectedStage === null) {
             const id = PreferencesManager.Instance.PreferredStageId;
 
-            const stages = this.filterStages(props).filter(s => s.id === id);
+            const stages = this.filterStages(props).filter(s => s.id === id) || null;
 
             if (stages.length > 0) {
                 this.onSelectStage(stages[0]);
             }
         } else {
-            const stage = this.filterStages(props).find(s => s.id === this.state.selectedStage.id);
+            const stage = this.filterStages(props).find(s => s.id === this.state.selectedStage.id) || null;
             this.onSelectStage(stage);
         }
 

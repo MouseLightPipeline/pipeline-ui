@@ -59,16 +59,16 @@ export class TaskRepositoryTable extends React.Component<ITaskRepositoryTablePro
     }
 
     private onCompleteDeleteRepository = (data) => {
-        if (data.deleteTaskRepository.error) {
-            toast.error(toastError("Delete", data.deleteTaskRepository.error), {autoClose: false});
+        if (data.archiveTaskRepository.error) {
+            toast.error(toastError("Archive", data.archiveTaskRepository.error), {autoClose: false});
         } else {
             this.setState({selectedRepository: null});
-            toast.success(toastSuccess("Delete"), {autoClose: 3000});
+            toast.success(toastSuccess("Archive"), {autoClose: 3000});
         }
     };
 
     private onDeleteRepositoryError = (error) => {
-        toast.error(toastError("Delete", error), {autoClose: false});
+        toast.error(toastError("Archive", error), {autoClose: false});
     };
 
     private onClearDeleteConfirmation() {
@@ -79,23 +79,23 @@ export class TaskRepositoryTable extends React.Component<ITaskRepositoryTablePro
         return (
             <Mutation mutation={DeleteTaskRepositoryMutation} onCompleted={this.onCompleteDeleteRepository}
                       onError={this.onDeleteRepositoryError}
-                      update={(cache, {data: {deleteTaskRepository: {id}}}) => {
+                      update={(cache, {data: {archiveTaskRepository: {id}}}) => {
                           const data: any = cache.readQuery({query: BaseQuery});
                           cache.writeQuery({
                               query: BaseQuery,
                               data: Object.assign(data, {taskRepositories: data.taskRepositories.filter(t => t.id !== id)})
                           });
                       }}>
-                {(deleteTaskRepository) => {
+                {(archiveTaskRepository) => {
                     if (!this.state.isDeleteDialogShown) {
                         return null;
                     }
                     return (
-                        <Confirm open={this.state.isDeleteDialogShown} header="Delete Repository"
-                                 content={`Are you sure you want to delete ${this.state.selectedRepository.name} as a repository?`}
-                                 confirmButton="Delete" onCancel={() => this.onClearDeleteConfirmation()}
+                        <Confirm open={this.state.isDeleteDialogShown} header="Archive Repository"
+                                 content={`Are you sure you want to archive ${this.state.selectedRepository.name}?`}
+                                 confirmButton="Archive" onCancel={() => this.onClearDeleteConfirmation()}
                                  onConfirm={() => {
-                                     deleteTaskRepository({variables: {id: this.state.selectedRepository.id}});
+                                     archiveTaskRepository({variables: {id: this.state.selectedRepository.id}});
                                      this.setState({isDeleteDialogShown: false});
                                  }}/>
                     )
@@ -141,7 +141,7 @@ export class TaskRepositoryTable extends React.Component<ITaskRepositoryTablePro
                             </div>
                         </Menu.Header> : null}
                         <Menu.Menu position="right">
-                            <MenuItem size="mini" content="Delete" icon="trash" disabled={disabled_delete}
+                            <MenuItem size="mini" content="Archive" icon="trash" disabled={disabled_delete}
                                       onClick={(evt) => this.onClickDeleteRepository(evt)}/>
                         </Menu.Menu>
                     </Menu>
