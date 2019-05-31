@@ -9,10 +9,9 @@
   "dockerImageName": "pipeline-client",
   "scripts": {
     "devel": "DEBUG=pipeline* node $NODE_DEBUG_OPTION server/pipelineClientServer.js",
-    "start": "node server/pipelineClientServer.js",
     "lint": "eslint src",
     "docker-build": "webpack && gulp docker-build",
-    "release": "webpack && gulp release"
+    "docker-release": "webpack && gulp release"
   },
   "devDependencies": {
     "@types/highcharts": "^4.2.6",

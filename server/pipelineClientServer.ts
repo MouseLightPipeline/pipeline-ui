@@ -19,16 +19,19 @@ if (process.env.NODE_ENV !== "production") {
 
 import {Configuration} from "./configuration";
 import * as http from "http";
+import * as os from "os";
 
 const apiUri = `http://${Configuration.graphQLHostname}:${Configuration.graphQLPort}`;
 
-startExpressServer();
+const hostname = process.env.NODE_ENV == "production" ? os.hostname() : "localhost";
 
-startSocketIOServer();
+let socketIoPortOffset: number = 0;
+
+startExpressServer();
 
 function startExpressServer() {
 
-    debug(`Preparing http://${Configuration.host}:${Configuration.port}/`);
+    debug(`preparing http://${hostname}:${Configuration.port}/`);
 
     const rootPath = path.resolve(path.join(__dirname, "..", "public"));
 
@@ -36,6 +39,12 @@ function startExpressServer() {
 
     if (process.env.NODE_ENV !== "production") {
         app = devServer();
+
+        app.listen(Configuration.port, "0.0.0.0", () => {
+            debug(`listening at http://${hostname}:${Configuration.port}/`);
+        });
+
+        startSocketIOServer();
     } else {
         app = express();
 
@@ -52,34 +61,43 @@ function startExpressServer() {
         app.use("/", (req, res) => {
             res.sendFile(path.join(rootPath, "index.html"));
         });
-    }
 
-    app.listen(Configuration.port, "0.0.0.0", () => {
-        if (process.env.NODE_ENV !== "production") {
-            debug(`Listening at http://${Configuration.host}:${Configuration.port}/`);
-        }
-    });
+        const server = http.createServer(app);
+
+        startSocketIOServer(server);
+
+        server.listen(Configuration.port, "0.0.0.0", () => {
+            debug(`listening at http://${hostname}:${Configuration.port}/`);
+        });
+    }
 }
 
-function startSocketIOServer() {
-    const ipPort = Configuration.port + 1;
+function startSocketIOServer(server = null) {
+    const needCreateServer = server === null;
 
-    debug(`preparing socketio at http://${Configuration.host}:${ipPort}/`);
+    if (needCreateServer) {
+        server = http.createServer(() => {
+        });
+    }
 
-    const server = http.createServer(() => {
-    });
     const io = require("socket.io")(server);
 
     io.on("connection", (socket) => {
-        socket.on("stopMicroscopeAcquisition", (location: string) => {
+        socket.on("stopMicroscopeAcquisition", () => {
         });
         socket.on("restartHubProxy", () => {
         });
     });
 
-    server.listen(ipPort, () => {
-        debug(`socketio listening at http://${Configuration.host}:${ipPort}/`);
-    });
+    if (needCreateServer) {
+        socketIoPortOffset = 1;
+        const ipPort = Configuration.port + 1;
+
+        debug(`preparing socket.io at http://${hostname}:${ipPort}/`);
+        server.listen(ipPort, () => {
+            debug(`socket.io listening at http://${hostname}:${ipPort}/`);
+        });
+    }
 }
 
 function serverConfiguration(req, resp) {
@@ -89,7 +107,8 @@ function serverConfiguration(req, resp) {
         thumbsHostname: Configuration.thumbsHostname,
         thumbsPort: Configuration.thumbsPort,
         thumbsPath: Configuration.thumbsPath,
-        isActivePipeline: Configuration.isActivePipeline
+        isActivePipeline: Configuration.isActivePipeline,
+        socketIoPortOffset: socketIoPortOffset
     });
 }
 

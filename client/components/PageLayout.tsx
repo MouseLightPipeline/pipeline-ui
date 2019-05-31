@@ -71,6 +71,7 @@ interface IPageLayoutState {
     thumbsPort?: number;
     thumbsPath?: string;
     isActivePipeline?: boolean;
+    socketIoPortOffset?: number;
 }
 
 export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutState> implements IInternalApiDelegate, IRealTimeApiDelegate {
@@ -89,7 +90,8 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
             thumbsHostname: "",
             thumbsPort: 80,
             thumbsPath: "/thumbnail",
-            isActivePipeline: true
+            isActivePipeline: true,
+            socketIoPortOffset: 0
         };
 
         this._internalApi = new InternalApi(this);
@@ -97,11 +99,13 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
     }
 
     public async componentDidMount() {
-        await this._realTimeApi.connect();
+        this._internalApi.start();
     }
 
     public componentWillUnmount() {
-        this._realTimeApi.close();
+        if (this._realTimeApi !== null) {
+            this._realTimeApi.close();
+        }
     }
 
     private onToggleSidebar() {
@@ -111,7 +115,9 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
 
     public render() {
         if (!this.state.isServerConnected) {
-            return (<Message warning style={{margin: "20px"}}>The server is no longer responding.  The service may be down.  Will continue to retry the connection.</Message>);
+            return (
+                <Message warning style={{margin: "20px"}}>The server is no longer responding. The service may be down.
+                    Will continue to retry the connection.</Message>);
         }
 
         const width = this.state.isSidebarExpanded ? 199 : 79;
@@ -229,7 +235,8 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
             thumbsHostname: message.thumbsHostname,
             thumbsPort: message.thumbsPort,
             thumbsPath: message.thumbsPath,
-            isActivePipeline: message.isActivePipeline
+            isActivePipeline: message.isActivePipeline,
+            socketIoPortOffset: message.socketIoPortOffset
         });
 
         // If this is the first request then it is the version we loaded.  If not, the backend may have restarted
@@ -237,6 +244,8 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
         if (!this.state.loadedBuildVersion) {
             this.setState({loadedBuildVersion: message.buildVersion});
         }
+
+        this._realTimeApi.connect(message.socketIoPortOffset).then();
     }
 
     private dashboard = (projects: IProject[], workers: IWorker[]) => (
@@ -257,7 +266,8 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
     );
 
     private pipelineStages = (projects: IProject[], pipelineStages: IPipelineStage[], taskDefinitions: ITaskDefinition[], workerMap: Map<string, IWorker>) => (
-        <PipelineStages projects={projects} pipelineStages={pipelineStages} taskDefinitions={taskDefinitions} workerMap={workerMap}/>
+        <PipelineStages projects={projects} pipelineStages={pipelineStages} taskDefinitions={taskDefinitions}
+                        workerMap={workerMap}/>
     );
 
     private tasks = (taskRepositories: ITaskRepository[], taskDefinitions: ITaskDefinition[], pipelineVolume: string) => (

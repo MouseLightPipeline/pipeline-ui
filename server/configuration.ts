@@ -1,7 +1,6 @@
 import {isNullOrUndefined} from "util";
 
 const configurations = {
-        host: "pipeline-client",
         port: 6101,
         internalApiBase: "/api/v1/internal/",
         graphQLHostname: "pipeline-api",
@@ -17,7 +16,6 @@ const configurations = {
 function loadServerOptions() {
     const options = Object.assign({}, configurations);
 
-    options.host = process.env.PIPELINE_API_CLIENT_HOST || options.host;
     options.port = parseInt(process.env.PIPELINE_API_CLIENT_PORT) || options.port;
     options.graphQLHostname = process.env.PIPELINE_API_HOST || options.graphQLHostname;
     options.graphQLPort = parseInt(process.env.PIPELINE_API_PORT) || options.graphQLPort;

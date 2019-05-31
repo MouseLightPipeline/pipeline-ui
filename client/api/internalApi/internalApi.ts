@@ -7,6 +7,7 @@ export interface IServerConfigurationMessage {
     thumbsPort: number;
     thumbsPath: string;
     isActivePipeline: boolean;
+    socketIoPortOffset: number;
 }
 
 export interface IInternalApiDelegate {

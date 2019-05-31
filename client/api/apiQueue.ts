@@ -45,7 +45,7 @@ export class ApiQueue {
         if (this._isKilled) {
             this.createQueue();
             this._isKilled = false;
-            console.log(`Started ${this._basePath} queue with id ${this._id}`);
+            console.log(`started ${this._basePath} queue with id ${this._id}`);
 
             return true;
         }
@@ -62,7 +62,7 @@ export class ApiQueue {
                 this._queue.kill();
                 this._queue = null;
             }
-            console.log(`Killed queue with id ${this._id}`);
+            console.log(`killed queue with id ${this._id}`);
         }
     }
 

@@ -6,21 +6,21 @@ export interface IRealTimeApiDelegate {
 
 export class RealTimeApi {
     private _socket: any = null;
-
     public constructor(delegate?: IRealTimeApiDelegate) {
         this.Delegate = delegate;
     }
 
     public Delegate: IRealTimeApiDelegate = null;
 
-    public async connect() {
+    public async connect(portOffset: number = 0) {
         try {
             const loc = window.location;
-            const url = `${loc.protocol}//${loc.hostname}:${parseInt(loc.port) + 1}`;
+            const url = `${loc.protocol}//${loc.hostname}:${parseInt(loc.port) + portOffset}`;
             this._socket = socketIOClient(url);
 
             this._socket.on("connect", () => this.onServiceConnectionStateChanged(true));
             this._socket.on("disconnect", () => this.onServiceConnectionStateChanged(false));
+            console.log(`established socket.io connection ${url}`);
         } catch (err) {
             console.log(err);
             console.log("could not establish socket-io connection; deferring socket-io connection");
