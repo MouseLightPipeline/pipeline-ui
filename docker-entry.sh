@@ -18,4 +18,4 @@ chown mluser:mousebrainmicro ${logPath}
 
 export DEBUG=pipeline*
 
-node server/pipelineClientServer.js >> ${logPath} 2>&1
+node pipelineClientServer.js >> ${logPath} 2>&1

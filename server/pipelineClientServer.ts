@@ -1,7 +1,9 @@
 import * as path from "path";
+import * as os from "os";
+const express = require("express");
+import * as http from "http";
 import * as proxy from "express-http-proxy";
 
-const express = require("express");
 
 const debug = require("debug")("pipeline-api:server");
 
@@ -18,8 +20,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 import {Configuration} from "./configuration";
-import * as http from "http";
-import * as os from "os";
 
 const apiUri = `http://${Configuration.graphQLHostname}:${Configuration.graphQLPort}`;
 
