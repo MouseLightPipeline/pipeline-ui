@@ -33,8 +33,6 @@ function startExpressServer() {
 
     debug(`preparing http://${hostname}:${Configuration.port}/`);
 
-    const rootPath = path.resolve(path.join(__dirname, "..", "public"));
-
     let app = null;
 
     if (process.env.NODE_ENV !== "production") {
@@ -46,6 +44,8 @@ function startExpressServer() {
 
         startSocketIOServer();
     } else {
+        const rootPath = path.resolve(path.join(__dirname, "public"));
+
         app = express();
 
         app.use(express.static(rootPath));
@@ -54,7 +54,7 @@ function startExpressServer() {
 
         app.use("/thumbnail", proxy(apiUri + "/thumbnail"));
 
-        app.use("/thumbnailData", proxy(apiUri + "/thumbnailData"));
+        // app.use("/thumbnailData", proxy(apiUri + "/thumbnailData"));
 
         app.use(`${Configuration.internalApiBase}serverConfiguration`, serverConfiguration);
 
@@ -127,9 +127,9 @@ function devServer() {
             "/thumbnail": {
                 target: apiUri
             },
-            "/thumbnailData": {
-                target: apiUri
-            }
+            // "/thumbnailData": {
+            //       target: apiUri
+            // }
         },
         contentBase: path.resolve(path.join(__dirname, "..", "public")),
         disableHostCheck: true,
