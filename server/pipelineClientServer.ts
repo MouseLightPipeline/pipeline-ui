@@ -3,7 +3,8 @@ import * as os from "os";
 const express = require("express");
 import * as http from "http";
 import * as proxy from "express-http-proxy";
-
+const passport = require("passport");
+const DigestStrategy = require("passport-http").DigestStrategy;
 
 const debug = require("debug")("pipeline-api:server");
 
@@ -27,6 +28,28 @@ const hostname = process.env.NODE_ENV == "production" ? os.hostname() : "localho
 
 let socketIoPortOffset: number = 0;
 
+passport.use(new DigestStrategy({qop: 'auth'},
+    function (username: any, done: any) {
+        if (username === Configuration.authUser) {
+            return done(null, {id: 1, name: username}, Configuration.authPassword);
+        } else {
+            return done("Invalid user", null);
+        }
+    },
+    function (params: any, done: any) {
+        // validate nonce as necessary
+        done(null, true)
+    }
+));
+
+passport.serializeUser(function (user: any, done: any) {
+    done(null, user.id);
+});
+
+passport.deserializeUser(function (id: any, done: any) {
+    done(null, {id: 1, name: Configuration.authUser});
+});
+
 startExpressServer();
 
 function startExpressServer() {
@@ -48,13 +71,19 @@ function startExpressServer() {
 
         app = express();
 
+        if (Configuration.authRequired) {
+            app.use(passport.initialize());
+
+            app.get("/", passport.authenticate('digest', {session: false}), (request: any, response: any, next: any) => {
+                next();
+            });
+        }
+
         app.use(express.static(rootPath));
 
         app.post("/graphql", proxy(apiUri + "/graphql"));
 
         app.use("/thumbnail", proxy(apiUri + "/thumbnail"));
-
-        // app.use("/thumbnailData", proxy(apiUri + "/thumbnailData"));
 
         app.use(`${Configuration.internalApiBase}serverConfiguration`, serverConfiguration);
 
@@ -126,12 +155,9 @@ function devServer() {
             },
             "/thumbnail": {
                 target: apiUri
-            },
-            // "/thumbnailData": {
-            //       target: apiUri
-            // }
+            }
         },
-        contentBase: path.resolve(path.join(__dirname, "..", "public")),
+        contentBase: path.resolve(path.join(__dirname, "..")),
         disableHostCheck: true,
         publicPath: webpackConfig.output.publicPath,
         // hot: true,

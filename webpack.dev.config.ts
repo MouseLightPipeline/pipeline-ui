@@ -1,6 +1,6 @@
 import * as path from "path";
 
-const dist = path.join(__dirname, "public");
+const dist = path.join(__dirname);
 
 module.exports = {
     entry: [
