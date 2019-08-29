@@ -1,7 +1,8 @@
 import * as path from "path";
-import * as proxy from "express-http-proxy";
-
 const express = require("express");
+import * as proxy from "express-http-proxy";
+const passport = require("passport");
+const DigestStrategy = require("passport-http").DigestStrategy;
 
 const debug = require("debug")("pipeline-api:server");
 
@@ -27,6 +28,28 @@ const hostname = process.env.NODE_ENV == "production" ? os.hostname() : "localho
 
 let socketIoPortOffset: number = 0;
 
+passport.use(new DigestStrategy({qop: 'auth'},
+    function (username: any, done: any) {
+        if (username === Configuration.authUser) {
+            return done(null, {id: 1, name: username}, Configuration.authPassword);
+        } else {
+            return done("Invalid user", null);
+        }
+    },
+    function (params: any, done: any) {
+        // validate nonce as necessary
+        done(null, true)
+    }
+));
+
+passport.serializeUser(function (user: any, done: any) {
+    done(null, user.id);
+});
+
+passport.deserializeUser(function (id: any, done: any) {
+    done(null, {id: 1, name: Configuration.authUser});
+});
+
 startExpressServer();
 
 function startExpressServer() {
@@ -47,6 +70,14 @@ function startExpressServer() {
         startSocketIOServer();
     } else {
         app = express();
+
+        if (Configuration.authRequired) {
+            app.use(passport.initialize());
+
+            app.get("/", passport.authenticate('digest', {session: false}), (request: any, response: any, next: any) => {
+                next();
+            });
+        }
 
         app.use(express.static(rootPath));
 
