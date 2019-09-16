@@ -226,7 +226,7 @@ export class EditPipelineStageDialog extends React.Component<IEditStageProps, IE
                     {this.props.sourceStage ? <div style={{
                         width: "100%",
                         textAlign: "right"
-                    }}>{`(id: ${this.props.sourceStage.id}})`}</div> : null}
+                    }}>{`(id: ${this.props.sourceStage.id})`}</div> : null}
                 </Modal.Content>
                 {!viewOnly ?
                     this.renderCreateUpdateActions() :
