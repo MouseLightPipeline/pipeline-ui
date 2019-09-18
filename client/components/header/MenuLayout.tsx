@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Image, Menu, Label, Icon} from "semantic-ui-react";
+import {Image, Menu, Label, Icon, Header, Popup, Message} from "semantic-ui-react";
 import {HeaderSummary} from "../dashboard/HeaderSummary";
 import {IProject} from "../../models/project";
 import {IWorker} from "../../models/worker";
@@ -14,6 +14,7 @@ interface IMenuLayoutProps {
     isSidebarExpanded: boolean;
     isActivePipeline: boolean;
     schedulerHealth: ISchedulerHealth;
+    name: string;
 
     onToggleSidebar(): void;
 }
@@ -39,10 +40,13 @@ export class MenuLayout extends React.Component<IMenuLayoutProps, IMenuLayoutSta
             );
         } else {
             return (
-                <Label color="red">
-                    <Icon name={"exclamation"} color="black"/>
-                    {`Scheduler Offline ${this.props.schedulerHealth.lastSeen ? "(last seen " + new Date(this.props.schedulerHealth.lastSeen).toLocaleString() + ")" : ""}`}
-                </Label>
+                <Popup
+                    content="To restart the scheduler, log into mouselight.int.janelia.org as mluser, cd to /data/sites/pipeline/<pipeline-a or -b based on name to the right>/pipeline-deploy-services and type ./up.sh"
+                    trigger={
+                        <Label color="red">
+                            <Icon name={"exclamation"} color="black"/>
+                            {`Scheduler Offline ${this.props.schedulerHealth.lastSeen ? "(last seen " + new Date(this.props.schedulerHealth.lastSeen).toLocaleString() + ")" : ""}`}
+                        </Label>}/>
             );
         }
     }
@@ -71,6 +75,9 @@ export class MenuLayout extends React.Component<IMenuLayoutProps, IMenuLayoutSta
                 </Menu.Item>
                 <Menu.Item>
                     {this.renderSchedulerHealth()}
+                </Menu.Item>
+                <Menu.Item>
+                    <Header as="h3" inverted={true}>{this.props.name}</Header>
                 </Menu.Item>
                 <Menu.Menu position="right">
                     <HeaderSummary projects={this.props.projects} workers={this.props.workers} isNavTile={true}/>

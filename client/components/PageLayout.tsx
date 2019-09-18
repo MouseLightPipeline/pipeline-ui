@@ -62,6 +62,7 @@ interface IPageLayoutProps {
 }
 
 interface IPageLayoutState {
+    name?: string;
     buildVersion?: number;
     loadedBuildVersion?: number;
     processId?: number;
@@ -83,6 +84,7 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
         super(props);
 
         this.state = {
+            name: "",
             buildVersion: null,
             loadedBuildVersion: null,
             processId: null,
@@ -165,6 +167,7 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
                                             isActivePipeline={this.state.isActivePipeline}
                                             isSidebarExpanded={this.state.isSidebarExpanded}
                                             schedulerHealth={data.schedulerHealth}
+                                            name={this.state.name}
                                             onToggleSidebar={() => this.onToggleSidebar()}/>
                                 <div style={{
                                     display: "flex",
@@ -237,6 +240,7 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
 
     public onServerConfiguration(message: IServerConfigurationMessage) {
         this.setState({
+            name: message.name,
             buildVersion: message.buildVersion,
             processId: message.processId,
             thumbsHostname: message.thumbsHostname,

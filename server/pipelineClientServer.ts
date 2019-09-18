@@ -13,6 +13,8 @@ let Webpack = null;
 let webpackDevServer = null;
 let compiler = null;
 
+import {Response} from "express";
+
 if (process.env.NODE_ENV !== "production") {
     webpackConfig = require("../webpack.dev.config.js");
     Webpack = require("webpack");
@@ -85,7 +87,7 @@ function startExpressServer() {
 
         app.use("/thumbnail", proxy(apiUri + "/thumbnail"));
 
-        app.use(`${Configuration.internalApiBase}serverConfiguration`, serverConfiguration);
+        app.use(`${Configuration.internalApiBase}serverConfiguration`, (req, res) => serverConfiguration(req, res));
 
         app.use("/", (req, res) => {
             res.sendFile(path.join(rootPath, "index.html"));
@@ -129,8 +131,9 @@ function startSocketIOServer(server = null) {
     }
 }
 
-function serverConfiguration(req, resp) {
+function serverConfiguration(req, resp: Response) {
     resp.json({
+        name: Configuration.name,
         buildVersion: Configuration.buildVersion,
         processId: process.pid,
         thumbsHostname: Configuration.thumbsHostname,
@@ -147,7 +150,7 @@ function devServer() {
             colors: true
         },
         before: (app) => {
-            app.use(`${Configuration.internalApiBase}serverConfiguration`, serverConfiguration);
+            app.use(`${Configuration.internalApiBase}serverConfiguration`, (req, res) => serverConfiguration(req, res));
         },
         proxy: {
             "/graphql": {

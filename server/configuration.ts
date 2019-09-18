@@ -11,7 +11,8 @@ const configurations = {
     thumbsPath: "/thumbnail",
     authRequired: true,
     authUser: "mouselight",
-    authPassword: "auth_secret", // always override this, but in the event env is not set, don't leave completely open.
+    authPassword: "auth_secret", // always override this, but in the event env is not set, don't leave completely open
+    name: "Pipeline",
     buildVersion: 5,
     isActivePipeline: true
 };
@@ -28,6 +29,7 @@ function loadServerOptions() {
     options.authRequired = process.env.PIPELINE_AUTH_REQUIRED !== "false";
     options.authUser = process.env.PIPELINE_AUTH_USER || options.authUser;
     options.authPassword = process.env.PIPELINE_AUTH_PASS || options.authPassword;
+    options.name = process.env.PIPELINE_NAME || process.env.PIPELINE_COMPOSE_PROJECT || options.name;
 
     if (!isNullOrUndefined(process.env.PIPELINE_IS_ACTIVE) && process.env.PIPELINE_IS_ACTIVE.length > 0) {
         options.isActivePipeline = parseInt(process.env.PIPELINE_IS_ACTIVE) > 0;

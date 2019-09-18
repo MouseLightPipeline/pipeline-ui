@@ -1,6 +1,7 @@
 import {ApiQueue, ApiRequest} from "../apiQueue";
 
 export interface IServerConfigurationMessage {
+    name: string;
     buildVersion: number;
     processId: number;
     thumbsHostname: string;
