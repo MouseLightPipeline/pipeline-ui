@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Image, Menu, Label, Icon, Header, Popup, Message} from "semantic-ui-react";
+import {Image, Menu, Label, Icon, Header, Popup} from "semantic-ui-react";
 import {HeaderSummary} from "../dashboard/HeaderSummary";
 import {IProject} from "../../models/project";
 import {IWorker} from "../../models/worker";
