@@ -21,6 +21,9 @@ export const ProjectFieldsFragment = gql`fragment ProjectFields on Project {
     region_y_max
     region_z_min
     region_z_max
+    user_parameters
+    plane_markers
+    zPlaneSkipIndices
     is_processing
     input_source_state
     last_seen_input_source

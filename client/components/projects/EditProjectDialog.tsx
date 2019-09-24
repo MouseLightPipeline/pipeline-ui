@@ -21,15 +21,19 @@ interface IEditProjectProps {
 
 interface IEditProjectState {
     project?: IProject;
+    zPlaneIndicesString?: string;
 }
 
 export class EditProjectDialog extends React.Component<IEditProjectProps, IEditProjectState> {
     public constructor(props: IEditProjectProps) {
         super(props);
 
+        const zPlaneIndicesString = props.sourceProject ? props.sourceProject.zPlaneSkipIndices.toString() : "";
+
         this.state = {
             project: props.sourceProject ? (({
                                                  id, name, description, root_path, log_root_path, sample_number,
+                                                 user_parameters, plane_markers, zPlaneSkipIndices,
                                                  region_x_min, region_x_max, region_y_min, region_y_max, region_z_min, region_z_max
                                              }) => ({
                 id,
@@ -38,6 +42,9 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
                 root_path,
                 log_root_path,
                 sample_number,
+                user_parameters,
+                plane_markers,
+                zPlaneSkipIndices,
                 region_x_min,
                 region_x_max,
                 region_y_min,
@@ -51,6 +58,9 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
                 root_path: "",
                 log_root_path: "",
                 sample_number: null,
+                user_parameters: "",
+                plane_markers: "",
+                zPlaneSkipIndices: [],
                 region_x_min: null,
                 region_x_max: null,
                 region_y_min: null,
@@ -58,7 +68,8 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
                 region_z_min: null,
                 region_z_max: null,
 
-            }
+            },
+            zPlaneIndicesString
         };
     }
 
@@ -116,6 +127,21 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
         });
     }
 
+    private get isZPlaneIndicesValid(): boolean {
+        try {
+            const arr = JSON.parse(`[${this.state.zPlaneIndicesString}]`);
+            return Array.isArray(arr);
+        } catch {
+            return false;
+        }
+    }
+
+    private onZPlaneIndicesChanged(evt: ChangeEvent<any>) {
+        this.setState({
+            zPlaneIndicesString: evt.target.value
+        });
+    }
+
     private onDescriptionChanged(evt: ChangeEvent<any>) {
         this.setState({
             project: Object.assign(this.state.project, {description: evt.target.value})
@@ -153,8 +179,6 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
 
         obj[propertyName] = limit;
 
-        console.log(obj);
-
         this.setState({
             project: Object.assign(this.state.project, obj)
         });
@@ -182,7 +206,8 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
                 y_max: region_y_max,
                 z_min: region_z_min,
                 z_max: region_z_max
-            }
+            },
+            zPlaneSkipIndices: JSON.parse(`[${this.state.zPlaneIndicesString}]`)
         }))(this.state.project));
 
         this.props.onAccept(projectInput)
@@ -205,6 +230,7 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
                             <Form.Input label="Sample Number" value={this.state.project.sample_number !== null ? this.state.project.sample_number : ""} onChange={(evt: any) => this.onSampleNumberChanged(evt)}/>
                             <Form.Input label="Log Root Path" value={this.state.project.log_root_path !== null ? this.state.project.log_root_path : ""} error={!this.isLogRootPathValid} onChange={(evt: any) => this.onLogRootPathChanged(evt)}/>
                             <Form.TextArea label="Description" value={this.state.project.description} onChange={evt => this.onDescriptionChanged(evt)}/>
+                            <Form.Input label="Skipped Z Planes" value={this.state.zPlaneIndicesString} error={!this.isZPlaneIndicesValid} onChange={(evt: any) => this.onZPlaneIndicesChanged(evt)}/>
                             <h5 style={{paddingTop: "10px"}}>Selected Region (optional)</h5>
                             <Form.Group widths="equal">
                                 <Form.Input label="Min X" value={this.state.project.region_x_min !== null ? this.state.project.region_x_min : ""} onChange={evt => this.onSampleRegionChanged("region_x_min", evt)}/>

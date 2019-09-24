@@ -30,6 +30,9 @@ export interface IProject {
     region_z_min?: number;
     region_z_max?: number;
     is_processing?: boolean;
+    user_parameters?: string;
+    plane_markers?: string;
+    zPlaneSkipIndices?: number[];
     input_source_state?: ProjectInputSourceState;
     last_seen_input_source?: Date;
     last_checked_input_source?: Date;

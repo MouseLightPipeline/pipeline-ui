@@ -393,6 +393,7 @@ export class ProjectTable extends React.Component<IProjectTableProps, IProjectTa
             defaultSorted: PreferencesManager.Instance.ProjectTableSort,
             defaultFiltered: this.props.isFiltered ? PreferencesManager.Instance.ProjectTableFilter : [],
             filterable: this.props.isFiltered,
+            expanded: {},
             onSortedChange: (newSorted) => {
                 PreferencesManager.Instance.ProjectTableSort = newSorted;
             },
@@ -415,7 +416,6 @@ export class ProjectTable extends React.Component<IProjectTableProps, IProjectTa
                 }
             }
         };
-
 
         return (
             <div style={Object.assign({width: "100%"}, this.props.style || {})}>
