@@ -1,6 +1,5 @@
 import * as React from "react";
 import {Button, Card, Icon, Label, List} from "semantic-ui-react";
-import {toast} from "react-toastify";
 import * as CopyToClipboard from "react-copy-to-clipboard";
 
 import {IPipelineTile} from "../../../models/pipelineTile";
@@ -12,6 +11,7 @@ import {CompletionResult, ExecutionStatus, QueueType, TaskExecution} from "../..
 import {PreferencesManager} from "../../../util/preferencesManager";
 import {Mutation} from "react-apollo";
 import ReactTable from "react-table";
+import {RemoveTaskExecutionMutation, StopTaskExecutionMutation} from "../../../graphql/taskExecution";
 
 interface ITilesTableProps {
     style?: any;
@@ -67,41 +67,53 @@ export class TilesTable extends React.Component<ITilesTableProps, ITilesTableSta
     }
 
     private renderTaskButtons(tileId: string, taskExecution: TaskExecution) {
+        if (taskExecution.execution_status_code === ExecutionStatus.Completed && taskExecution.completion_status_code === CompletionResult.Error) {
+            return (
+                <Mutation mutation={RemoveTaskExecutionMutation} onCompleted={(data) => console.log(data)}>
+                    {(removeTaskExecution) => (
+                        <Button size="tiny" floated="right" color="orange" onClick={() => removeTaskExecution({
+                            variables: {
+                                pipelineStageId: this.props.pipelineStage.id,
+                                taskExecutionId: taskExecution.id
+                            }
+                        })}>
+                            Remove
+                        </Button>
+                    )}
+                </Mutation>
+            );
+        }
         if (taskExecution.execution_status_code > ExecutionStatus.Running) {
             // TODO have a hide button for error/cancel/ maybe success.
             return null;
         }
 
-        // TODO Need to know how long since last update from worker on this task - determine if it is likely orphaned.
+        if (taskExecution.IsLongRunning) {
+            return (
+                <Mutation mutation={SetTileStatusMutation}>
+                    {(setTileStatus) => (
+                        <Button size="tiny" onClick={() => setTileStatus({
+                            variables: {
+                                pipelineStageId: this.props.pipelineStage.id,
+                                tileIds: [tileId],
+                                status: TilePipelineStatus.Incomplete
+                            }
+                        })}>
+                            Cancel
+                        </Button>
+                    )}
+                </Mutation>
+            );
+        }
 
-        // TODO Send the task execution ID so it can be marked as orphaned, unless an future update comes in.
-
-        return (
-            <Card.Content extra>
-                {taskExecution.lastUpdate(this.props.workerMap.get(taskExecution.worker_id))}
-                &nbsp;
-                {taskExecution.IsLongRunning ?
-                    <Mutation mutation={SetTileStatusMutation}>
-                        {(setTileStatus) => (
-                            <Button size="tiny" onClick={() => setTileStatus({
-                                variables: {
-                                    pipelineStageId: this.props.pipelineStage.id,
-                                    tileIds: [tileId],
-                                    status: TilePipelineStatus.Incomplete
-                                }
-                            })}>
-                                This seems too long
-                            </Button>
-                        )}
-                    </Mutation> : null}
-            </Card.Content>
-        );
+        return null;
     }
 
     private renderTaskExecution(tileId: string, taskExecution: TaskExecution) {
         return (
             <Card key={taskExecution.id}>
                 <Card.Content>
+                    {this.renderTaskButtons(tileId, taskExecution)}
                     <Card.Header>
                         {this.renderTaskStatusIcon(taskExecution)}
                         {taskExecution.IsComplete ? CompletionResult[taskExecution.completion_status_code] : ExecutionStatus[taskExecution.execution_status_code]}
@@ -148,7 +160,9 @@ export class TilesTable extends React.Component<ITilesTableProps, ITilesTableSta
                         </List>
                     </Card.Description>
                 </Card.Content>
-                {this.renderTaskButtons(tileId, taskExecution)}
+                <Card.Content extra>
+                    {taskExecution.lastUpdate(this.props.workerMap.get(taskExecution.worker_id))}
+                </Card.Content>
             </Card>
         );
     }
