@@ -83,20 +83,14 @@ export class TilesTable extends React.Component<ITilesTableProps, ITilesTableSta
                 </Mutation>
             );
         }
-        if (taskExecution.execution_status_code > ExecutionStatus.Running) {
-            // TODO have a hide button for error/cancel/ maybe success.
-            return null;
-        }
-
-        if (taskExecution.IsLongRunning) {
+        if (taskExecution.execution_status_code === ExecutionStatus.Running) {
             return (
-                <Mutation mutation={SetTileStatusMutation}>
-                    {(setTileStatus) => (
-                        <Button size="tiny" onClick={() => setTileStatus({
+                <Mutation mutation={StopTaskExecutionMutation} onCompleted={(data) => console.log(data)}>
+                    {(stopTaskExecution) => (
+                        <Button size="tiny" floated="right" color="red" onClick={() => stopTaskExecution({
                             variables: {
                                 pipelineStageId: this.props.pipelineStage.id,
-                                tileIds: [tileId],
-                                status: TilePipelineStatus.Incomplete
+                                taskExecutionId: taskExecution.id
                             }
                         })}>
                             Cancel

@@ -30,8 +30,5 @@ ${TaskExecutionFieldsFragment}`;
 
 
 export const RemoveTaskExecutionMutation = gql`mutation RemoveTaskExecution($pipelineStageId: String!, $taskExecutionId: String!) {
-  removeTaskExecution(pipelineStageId: $pipelineStageId, taskExecutionId: $taskExecutionId) {
-    ...TaskExecutionFields
-  }
-}
-${TaskExecutionFieldsFragment}`;
+  removeTaskExecution(pipelineStageId: $pipelineStageId, taskExecutionId: $taskExecutionId)
+}`;
