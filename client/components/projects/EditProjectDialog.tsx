@@ -33,7 +33,7 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
         this.state = {
             project: props.sourceProject ? (({
                                                  id, name, description, root_path, log_root_path, sample_number,
-                                                 user_parameters, plane_markers, zPlaneSkipIndices,
+                                                 user_parameters, zPlaneSkipIndices,
                                                  region_x_min, region_x_max, region_y_min, region_y_max, region_z_min, region_z_max
                                              }) => ({
                 id,
@@ -43,7 +43,6 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
                 log_root_path,
                 sample_number,
                 user_parameters,
-                plane_markers,
                 zPlaneSkipIndices,
                 region_x_min,
                 region_x_max,
@@ -59,7 +58,6 @@ export class EditProjectDialog extends React.Component<IEditProjectProps, IEditP
                 log_root_path: "",
                 sample_number: null,
                 user_parameters: "",
-                plane_markers: "",
                 zPlaneSkipIndices: [],
                 region_x_min: null,
                 region_x_max: null,

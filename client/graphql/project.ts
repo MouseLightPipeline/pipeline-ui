@@ -7,7 +7,6 @@ export const ProjectFieldsFragment = gql`fragment ProjectFields on Project {
     description
     root_path
     log_root_path
-    dashboard_json_status
     sample_number
     sample_x_min
     sample_x_max
@@ -22,7 +21,6 @@ export const ProjectFieldsFragment = gql`fragment ProjectFields on Project {
     region_z_min
     region_z_max
     user_parameters
-    plane_markers
     zPlaneSkipIndices
     is_processing
     input_source_state
@@ -34,7 +32,7 @@ export const ProjectFieldsFragment = gql`fragment ProjectFields on Project {
 
 export const CreateProjectMutation = gql`mutation CreateProjectMutation($project: ProjectInput) {
   createProject(project: $project) {
-      project {
+      source {
         ...ProjectFields
         stages {
           ...StageRequiredFields
@@ -49,12 +47,11 @@ ${PipelineStageRequiredFieldsFragment}
 
 export const UpdateProjectMutation = gql`mutation UpdateProjectMutation($project: ProjectInput) {
     updateProject(project:$project) {
-      project {
+      source {
         ...ProjectFields
-      stages {
+        stages {
           ...StageRequiredFields
-      }
-        updated_at
+        }
       }
       error
     }
@@ -66,12 +63,11 @@ ${PipelineStageRequiredFieldsFragment}
 export const DuplicateProjectMutation = gql`
   mutation DuplicateProjectMutation($id: String) {
     duplicateProject(id: $id) {
-        project {
-          ...ProjectFields
-          stages {
-              ...StageRequiredFields
-          }
-        updated_at
+      source {
+        ...ProjectFields
+        stages {
+          ...StageRequiredFields
+        }
       }
       error
     }

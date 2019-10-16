@@ -15,7 +15,6 @@ export interface IProject {
     description?: string;
     root_path?: string;
     log_root_path?: string;
-    dashboard_json_status?: boolean;
     sample_number?: number;
     sample_x_min?: number;
     sample_x_max?: number;
@@ -31,7 +30,6 @@ export interface IProject {
     region_z_max?: number;
     is_processing?: boolean;
     user_parameters?: string;
-    plane_markers?: string;
     zPlaneSkipIndices?: number[];
     input_source_state?: ProjectInputSourceState;
     last_seen_input_source?: Date;
