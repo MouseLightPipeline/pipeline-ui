@@ -23,11 +23,3 @@ export const UpdateWorkerMutation = gql`mutation UpdateWorker($worker: PipelineW
 }
 ${WorkerFragment}
 `;
-
-export const SetWorkerInPoolMutation = gql`mutation SetPipelineStageStatusMutation($id: String!, $shouldBeInSchedulerPool: Boolean!) {
-    setWorkerAvailability(id:$id, shouldBeInSchedulerPool:$shouldBeInSchedulerPool) {
-      ...WorkerFields
-    }
-}
-${WorkerFragment}
-`;

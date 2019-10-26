@@ -20,7 +20,7 @@ export const TaskRepositoryFragment = gql`fragment TaskRepositoryFields on TaskR
 
 export const CreateTaskRepositoryMutation = gql`mutation CreateTaskRepository($taskRepository: TaskRepositoryInput) {
     createTaskRepository(taskRepository: $taskRepository) {
-        taskRepository {
+        source {
             ...TaskRepositoryFields
         }   
         error
@@ -31,7 +31,7 @@ ${TaskRepositoryFragment}
 
 export const UpdateTaskRepositoryMutation = gql`mutation UpdateTaskRepository($taskRepository: TaskRepositoryInput) {
     updateTaskRepository(taskRepository: $taskRepository) {
-        taskRepository {
+        source {
             ...TaskRepositoryFields
         }   
         error

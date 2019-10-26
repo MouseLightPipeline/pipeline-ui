@@ -85,7 +85,7 @@ export const PipelineStageFullFieldsFragment = gql`fragment PipelineStageFullFie
 export const CreateStageMutation = gql`
   mutation CreatePipelineStageMutation($pipelineStage: PipelineStageInput) {
     createPipelineStage(pipelineStage: $pipelineStage) {
-        pipelineStage {
+        source {
           ...StageRequiredFields
           created_at
           updated_at
@@ -99,7 +99,7 @@ ${PipelineStageRequiredFieldsFragment}
 export const UpdatePipelineStageMutation = gql`
   mutation UpdatePipelineStageMutation($pipelineStage: PipelineStageInput) {
     updatePipelineStage(pipelineStage: $pipelineStage) {
-        pipelineStage {
+        source {
           ...StageRequiredFields
           created_at
           updated_at

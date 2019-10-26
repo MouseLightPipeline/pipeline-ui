@@ -29,7 +29,7 @@ export const TaskDefinitionFragment = gql`fragment TaskDefinitionFields on TaskD
 
 export const CreateTaskDefinitionMutation = gql`mutation CreateTaskDefinition($taskDefinition: TaskDefinitionInput) {
     createTaskDefinition(taskDefinition: $taskDefinition) {
-        taskDefinition {
+        source {
             ...TaskDefinitionFields
         }   
         error
@@ -40,7 +40,7 @@ ${TaskDefinitionFragment}
 
 export const UpdateTaskDefinitionMutation = gql`mutation UpdateTaskDefinition($taskDefinition: TaskDefinitionInput) {
     updateTaskDefinition(taskDefinition: $taskDefinition) {
-        taskDefinition {
+        source {
             ...TaskDefinitionFields
         }   
         error
@@ -52,7 +52,7 @@ ${TaskDefinitionFragment}
 export const DuplicateTaskMutation = gql`
   mutation DuplicateTaskMutation($id: String) {
     duplicateTaskDefinition(id: $id) {
-        taskDefinition {
+        source {
             ...TaskDefinitionFields
         }   
         error

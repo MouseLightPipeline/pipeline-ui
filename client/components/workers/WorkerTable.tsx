@@ -9,7 +9,7 @@ import {IWorker, PipelineWorkerStatus} from "../../models/worker";
 import {DialogMode} from "../helpers/DialogUtils";
 import {EditWorkerDialog} from "./EditWorkerDialog";
 import {toastError, toastSuccess} from "../../util/Toasts";
-import {SetWorkerInPoolMutation, UpdateWorkerMutation} from "../../graphql/workers";
+import {UpdateWorkerMutation} from "../../graphql/workers";
 import {PreferencesManager} from "../../util/preferencesManager";
 
 interface IWorkerTableProps {
@@ -112,18 +112,18 @@ export class WorkerTable extends React.Component<IWorkerTableProps, IWorkerTable
                     const worker = row.original;
                     const color = row.original.is_in_scheduler_pool ? "orange" : "green";
                     return (
-                        <Mutation mutation={SetWorkerInPoolMutation}>
-                            {(setWorkerAvailability, {loading}) => {
+                        <Mutation mutation={UpdateWorkerMutation}>
+                            {(updateWorker, {loading}) => {
                                 return (
                                     <Button size="mini" compact color={color}
                                             disabled={worker.status === PipelineWorkerStatus.Unavailable}
                                             className="active-button"
                                             icon={this.getActivateGlyph(worker.is_in_scheduler_pool, loading)}
                                             content={this.getActivateText(worker.is_in_scheduler_pool)}
-                                            onClick={() => setWorkerAvailability({
+                                            onClick={() => updateWorker({
                                                 variables: {
                                                     id: worker.id,
-                                                    shouldBeInSchedulerPool: !worker.is_in_scheduler_pool
+                                                    is_in_scheduler_pool: !worker.is_in_scheduler_pool
                                                 }
                                             })}>
                                     </Button>
