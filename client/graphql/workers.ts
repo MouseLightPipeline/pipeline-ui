@@ -15,7 +15,7 @@ export const WorkerFragment = gql`fragment WorkerFields on PipelineWorker {
 
 export const UpdateWorkerMutation = gql`mutation UpdateWorker($worker: PipelineWorkerInput) {
     updateWorker(worker: $worker) {
-        worker {
+        source {
           ...WorkerFields
         }   
         error

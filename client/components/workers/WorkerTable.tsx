@@ -46,7 +46,7 @@ export class WorkerTable extends React.Component<IWorkerTableProps, IWorkerTable
     }
 
     private onCompleteUpdateWorker = (data) => {
-        if (!data.updateWorker.worker) {
+        if (!data.updateWorker.source) {
             toast.error(toastError("Update", data.updateWorker.error), {autoClose: false});
         } else {
             toast.success(toastSuccess("Update"), {autoClose: 3000});
