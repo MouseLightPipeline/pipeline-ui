@@ -42,7 +42,7 @@
     "highcharts": "^5.0.7",
     "highcharts-heatmap": "^0.1.7",
     "highcharts-more": "^0.1.7",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.19",
     "moment": "^2.22.1",
     "numeric": "^1.2.6",
     "pixi.js": "^4.7.3",
