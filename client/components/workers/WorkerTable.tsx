@@ -122,8 +122,10 @@ export class WorkerTable extends React.Component<IWorkerTableProps, IWorkerTable
                                             content={this.getActivateText(worker.is_in_scheduler_pool)}
                                             onClick={() => updateWorker({
                                                 variables: {
-                                                    id: worker.id,
-                                                    is_in_scheduler_pool: !worker.is_in_scheduler_pool
+                                                    worker: {
+                                                        id: worker.id,
+                                                        is_in_scheduler_pool: !worker.is_in_scheduler_pool
+                                                    }
                                                 }
                                             })}>
                                     </Button>
