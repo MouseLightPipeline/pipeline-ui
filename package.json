@@ -39,7 +39,7 @@
     "graphql-tag": "^2.9.2",
     "gulp": "^3.9.1",
     "gulp-shell": "^0.6.5",
-    "highcharts": "^5.0.7",
+    "highcharts": "^9.0.0",
     "highcharts-heatmap": "^0.1.7",
     "highcharts-more": "^0.1.7",
     "lodash": "^4.17.10",
