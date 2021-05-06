@@ -2844,13 +2844,14 @@ highcharts-more@^0.1.7:
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/highcharts-more/-/highcharts-more-0.1.7.tgz#43cd6274cccba443166c94d4536d904bbabf9c77"
 
-highcharts@^5.0.7:
-  version "5.0.15"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-5.0.15.tgz#a9af11538a85b85f300e66f7a0e048a7ef8ab381"
-
 highcharts@^6.0.4:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-6.1.0.tgz#115a6ee10ad36a53d9913f1030c6d46da16c7cb5"
+
+highcharts@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-9.0.0.tgz#2e5d382481f71c50ac7f086e7bdead394fab71d4"
+  integrity sha512-MJCtidFytGSQvsV3OEM+vFTLpjUcp7jmFpLn8h3oL4WKp0gxUOQg6Nw00sqMWGdiadst0gOZO4804zynTcYjZQ==
 
 highlight.js@~9.12.0:
   version "9.12.0"
