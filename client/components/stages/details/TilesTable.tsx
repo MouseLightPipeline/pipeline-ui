@@ -83,7 +83,7 @@ export class TilesTable extends React.Component<ITilesTableProps, ITilesTableSta
                 </Mutation>
             );
         }
-        if (taskExecution.execution_status_code === ExecutionStatus.Running) {
+        if (taskExecution.execution_status_code === ExecutionStatus.Running || taskExecution.execution_status_code == ExecutionStatus.Initializing) {
             return (
                 <Mutation mutation={StopTaskExecutionMutation} onCompleted={(data) => console.log(data)}>
                     {(stopTaskExecution) => (

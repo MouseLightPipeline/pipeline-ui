@@ -1,7 +1,6 @@
 import * as React from "react";
 import {Route, Redirect, Switch, NavLink} from "react-router-dom";
 import {Container, Icon, Menu, List, Loader, Message, SemanticICONS} from "semantic-ui-react"
-import {Query} from "react-apollo";
 import {ToastContainer} from "react-toastify";
 
 import {MenuLayout} from "./header/MenuLayout";
@@ -22,6 +21,7 @@ import {ITaskDefinition} from "../models/taskDefinition";
 import {ITaskRepository} from "../models/taskRepository";
 import {IProject} from "../models/project";
 import {IPipelineStage} from "../models/pipelineStage";
+import {useQuery} from "react-apollo-hooks";
 
 const toastStyleOverride = {
     minWidth: "600px",
@@ -74,6 +74,88 @@ interface IPageLayoutState {
     thumbsPath?: string;
     isActivePipeline?: boolean;
     socketIoPortOffset?: number;
+}
+
+const PageLayoutQuery = (props: any) => {
+    const {loading, error, data} = useQuery(BaseQuery, {pollInterval: 15000});
+
+    if (error) {
+        return (<span>{error.message}</span>);
+    }
+
+    if (loading || !data) {
+        return (
+            <div style={{display: "flex", height: "100%", alignItems: "center"}}>
+                <Loader active inline="centered">Loading</Loader>
+            </div>
+        );
+    }
+
+    const workerMap = new Map<string, IWorker>();
+    data.pipelineWorkers.map(w => workerMap.set(w.id, w));
+
+    return (
+        <div style={{height: "100%"}}>
+            <ToastContainer autoClose={6000} position="bottom-center" style={toastStyleOverride}/>
+            <MenuLayout projects={data.projects} workers={data.pipelineWorkers}
+                        isActivePipeline={props.isActivePipeline}
+                        isSidebarExpanded={props.isSidebarExpanded}
+                        schedulerHealth={data.schedulerHealth}
+                        name={props.name}
+                        onToggleSidebar={() => props.onToggleSidebar()}/>
+            <div style={{
+                display: "flex",
+                minHeight: "calc(100% - 62px)",
+                margin: 0,
+                overflow: "hidden",
+
+            }}>
+                <Menu vertical inverted icon={props.icon} fixed="left"
+                      style={{
+                          order: 0,
+                          flex: "0 0 auto",
+                          width: props.width + "px",
+                          minHeight: "100%",
+                          transition: "all 0.3s ease",
+                          marginTop: "62px"
+                      }}>
+                    {props.menus}
+                    <Menu.Item>
+                        {props.isSidebarExpanded ?
+                            <List divided={false} size="tiny" style={{padding: "0px"}}>
+                                <List.Item>Version: {props.buildVersion}</List.Item>
+                                <List.Item>PID: {props.processId}</List.Item>
+                            </List> : null}
+                    </Menu.Item>
+                </Menu>
+
+                <Container
+                    style={{
+                        order: 1,
+                        flex: "1 1 auto",
+                        backgroundColor: "rgb(244, 247, 250)",
+                        width: "100%",
+                        transition: "all 0.3s ease",
+                        paddingLeft: props.isSidebarExpanded ? "200px" : "80px",
+                        paddingTop: "62px"
+                    }}>
+                    <Switch>
+                        <Route path="/" exact
+                               render={() => props.dashboard(data.projects, data.pipelineWorkers)}/>
+                        <Route path="/projects" render={() => props.projects(data.projects)}/>
+                        <Route path="/graphs" render={() => props.pipelineGraphs(data.projects)}/>
+                        <Route path="/tilemaps" render={() => props.tileMaps(data.projects)}/>
+                        <Route path="/stages"
+                               render={() => props.pipelineStages(data.projects, data.pipelineStages, data.taskDefinitions, workerMap)}/>
+                        <Route path="/tasks"
+                               render={() => props.tasks(data.taskRepositories, data.taskDefinitions, data.pipelineVolume)}/>
+                        <Route path="/workers" render={() => props.workers(data.pipelineWorkers)}/>
+                        <Redirect to="/"/>
+                    </Switch>
+                </Container>
+            </div>
+        </div>
+    );
 }
 
 export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutState> implements IInternalApiDelegate, IRealTimeApiDelegate {
@@ -142,90 +224,15 @@ export class PageLayout extends React.Component<IPageLayoutProps, IPageLayoutSta
         });
 
         return (
-            <Query query={BaseQuery} pollInterval={15000}>
-                {
-                    ({loading, error, data}) => {
-                        if (error) {
-                            return (<span>{error.message}</span>);
-                        }
-
-                        if (loading || !data) {
-                            return (
-                                <div style={{display: "flex", height: "100%", alignItems: "center"}}>
-                                    <Loader active inline="centered">Loading</Loader>
-                                </div>
-                            );
-                        }
-
-                        const workerMap = new Map<string, IWorker>();
-                        data.pipelineWorkers.map(w => workerMap.set(w.id, w));
-
-                        return (
-                            <div style={{height: "100%"}}>
-                                <ToastContainer autoClose={6000} position="bottom-center" style={toastStyleOverride}/>
-                                <MenuLayout projects={data.projects} workers={data.pipelineWorkers}
-                                            isActivePipeline={this.state.isActivePipeline}
-                                            isSidebarExpanded={this.state.isSidebarExpanded}
-                                            schedulerHealth={data.schedulerHealth}
-                                            name={this.state.name}
-                                            onToggleSidebar={() => this.onToggleSidebar()}/>
-                                <div style={{
-                                    display: "flex",
-                                    minHeight: "calc(100% - 62px)",
-                                    margin: 0,
-                                    overflow: "hidden",
-
-                                }}>
-                                    <Menu vertical inverted icon={icon} fixed="left"
-                                          style={{
-                                              order: 0,
-                                              flex: "0 0 auto",
-                                              width: width + "px",
-                                              minHeight: "100%",
-                                              transition: "all 0.3s ease",
-                                              marginTop: "62px"
-                                          }}>
-                                        {menus}
-                                        <Menu.Item>
-                                            {this.state.isSidebarExpanded ?
-                                                <List divided={false} size="tiny" style={{padding: "0px"}}>
-                                                    <List.Item>Version: {this.state.buildVersion}</List.Item>
-                                                    <List.Item>PID: {this.state.processId}</List.Item>
-                                                </List> : null}
-                                        </Menu.Item>
-                                    </Menu>
-
-                                    <Container
-                                        style={{
-                                            order: 1,
-                                            flex: "1 1 auto",
-                                            backgroundColor: "rgb(244, 247, 250)",
-                                            width: "100%",
-                                            transition: "all 0.3s ease",
-                                            paddingLeft: this.state.isSidebarExpanded ? "200px" : "80px",
-                                            paddingTop: "62px"
-                                        }}>
-                                        <Switch>
-                                            <Route path="/" exact
-                                                   render={() => this.dashboard(data.projects, data.pipelineWorkers)}/>
-                                            <Route path="/projects" render={() => this.projects(data.projects)}/>
-                                            <Route path="/graphs" render={() => this.pipelineGraphs(data.projects)}/>
-                                            <Route path="/tilemaps" render={() => this.tileMaps(data.projects)}/>
-                                            <Route path="/stages"
-                                                   render={() => this.pipelineStages(data.projects, data.pipelineStages, data.taskDefinitions, workerMap)}/>
-                                            <Route path="/tasks"
-                                                   render={() => this.tasks(data.taskRepositories, data.taskDefinitions, data.pipelineVolume)}/>
-                                            <Route path="/workers" render={() => this.workers(data.pipelineWorkers)}/>
-                                            <Redirect to="/"/>
-                                        </Switch>
-                                    </Container>
-                                </div>
-                            </div>
-                        );
-                    }
-                }
-            </Query>
-        )
+            <PageLayoutQuery width={width} icon={icon} menus={menus}
+                             dashboard={this.dashboard} projects={this.projects} pipelineGraphs={this.pipelineGraphs}
+                             tileMaps={this.tileMaps} pipelineStages={this.pipelineStages} tasks={this.tasks}
+                             workers={this.workers} onToggleSidebar={this.onToggleSidebar}
+                             isActivePipeline={this.state.isActivePipeline}
+                             isSidebarExpanded={this.state.isSidebarExpanded}
+                             name={this.state.name} buildVersion={this.state.buildVersion}
+                             processId={this.state.processId}/>
+        );
     }
 
     public onServiceConnectionStateChanged(isConnected: boolean) {

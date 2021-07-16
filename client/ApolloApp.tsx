@@ -1,20 +1,25 @@
 import * as React from "react";
-
-import ApolloClient from "apollo-boost";
 import {ApolloProvider} from "react-apollo";
+import {ApolloProvider as ApolloHooksProvider} from "react-apollo-hooks";
+import {ApolloClient} from "apollo-client";
+import {InMemoryCache} from "apollo-cache-inmemory";
+import {createHttpLink} from "apollo-link-http";
 
 import {PageLayout} from "./components/PageLayout";
 
 const client = new ApolloClient({
-    uri: "/graphql",
+    link: createHttpLink({uri: "/graphql"}),
+    cache: new InMemoryCache(),
 });
 
 export class ApolloApp extends React.Component<any, any> {
     render() {
         return (
-            <ApolloProvider client={client}>
-                <PageLayout/>
-            </ApolloProvider>
+            <ApolloHooksProvider client={client}>
+                <ApolloProvider client={client}>
+                    <PageLayout/>
+                </ApolloProvider>
+            </ApolloHooksProvider>
         );
     }
 }

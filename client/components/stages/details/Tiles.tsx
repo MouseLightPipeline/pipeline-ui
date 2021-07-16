@@ -1,6 +1,6 @@
 import * as React from "react";
 import {Container, Menu} from "semantic-ui-react";
-import {Query, Mutation} from "react-apollo";
+import {Mutation} from "react-apollo";
 
 import {IPipelineStage} from "../../../models/pipelineStage";
 import {TilesTable} from "./TilesTable";
@@ -10,10 +10,10 @@ import {
 } from "../../../models/tilePipelineStatus";
 import {TilePipelineStatusSelect} from "../../helpers/TilePipelineStatusSelect";
 import {PreferencesManager} from "../../../util/preferencesManager";
-import {toast} from "react-toastify";
 import {ConvertTileStatusMutation, SetTileStatusMutation, TilesForStageQuery} from "../../../graphql/pipelineTile";
 import {IWorker} from "../../../models/worker";
 import {TaskExecution} from "../../../models/taskExecution";
+import {useQuery} from "react-apollo-hooks";
 
 interface ITilesProps {
     pipelineStage: IPipelineStage;
@@ -81,96 +81,85 @@ interface ITilesTablePanelProps {
     workerMap: Map<string, IWorker>;
 
     onCursorChanged(page: number, pageSize: number): void;
+
     onRequestedStatusChanged(t: TilePipelineStatusType): void;
+
     setTileStatus?(pipelineStageId: string, tileIds: string[], status: TilePipelineStatus): any;
+
     convertTileStatus?(pipelineStageId: string, currentStatus: TilePipelineStatus, desiredStatus: TilePipelineStatus): any;
 }
 
-interface ITilesTablePanelState {
-    isRemoved?: boolean;
-}
+const TilesTablePanel = (props: ITilesTablePanelProps) => {
+    const {loading, error, data} = useQuery(TilesForStageQuery,
+        {
+            pollInterval: 10000,
+            ssr: false,
+            fetchPolicy: "cache-and-network",
+            variables: {
+                pipelineStageId: props.pipelineStage.id,
+                status: props.requestedStatus.option,
+                offset: props.offset,
+                limit: props.limit
+            }
+        });
 
-class TilesTablePanel extends React.Component<ITilesTablePanelProps, ITilesTablePanelState> {
-    public constructor(props: ITilesTablePanelProps) {
-        super(props);
+    let tilesForStage = null;
+    let pageCount = -1;
 
-        this.state = {
-            isRemoved: false
+    if (!loading && !error) {
+        tilesForStage = data.tilesForStage.items.map(item => Object.assign({}, item, {task_executions: item.task_executions.map(t => new TaskExecution(t))}));
+        if (data.tilesForStage.totalCount > 0 && data.tilesForStage.limit > 0) {
+            pageCount = Math.ceil(data.tilesForStage.totalCount / data.tilesForStage.limit);
         }
     }
 
-    public render() {
-        return (
-            <Query query={TilesForStageQuery} fetchPolicy="cache-and-network" pollInterval={10000} ssr={false}
-                   notifyOnNetworkStatusChange={false} variables={{
-                pipelineStageId: this.props.pipelineStage.id,
-                status: this.props.requestedStatus.option,
-                offset: this.props.offset,
-                limit: this.props.limit
-            }}>
-                {({loading, error, data}) => {
-                    let tilesForStage = null;
-                    let pageCount = -1;
-
-                    if (!loading && !error) {
-                        tilesForStage = data.tilesForStage.items.map(item => Object.assign({}, item, {task_executions: item.task_executions.map(t => new TaskExecution(t))}));
-                        if (data.tilesForStage.totalCount > 0 && data.tilesForStage.limit > 0) {
-                            pageCount = Math.ceil(data.tilesForStage.totalCount / data.tilesForStage.limit);
+    return (
+        <Container fluid style={{padding: "20px"}}>
+            <Menu size="mini" style={{borderBottomWidth: "1px", borderRadius: 0, marginBottom: 0, boxShadow: "none"}}>
+                <TilePipelineStatusSelect
+                    statusTypes={TILE_PIPELINE_STATUS_TYPES}
+                    selectedStatus={props.requestedStatus}
+                    onSelectStatus={(t) => props.onRequestedStatusChanged(t)}/>
+                <Menu.Menu position="right">
+                    <Mutation mutation={SetTileStatusMutation}>
+                        {(setTileStatus) => (
+                            <Menu.Item size="mini" content="Resubmit Page" icon="repeat"
+                                       disabled={!props.requestedStatus.canSubmit || (!loading && data.tilesForStage.length === 0)}
+                                       onClick={() => setTileStatus({
+                                           variables: {
+                                               pipelineStageId: props.pipelineStage.id,
+                                               tileIds: tilesForStage.items.map(t => t.relative_path),
+                                               status: TilePipelineStatus.Incomplete
+                                           }
+                                       })}/>
+                        )
                         }
-                    }
+                    </Mutation>
+                    <Mutation mutation={ConvertTileStatusMutation}>
+                        {(convertTileStatus) => (
+                            <Menu.Item size="mini" content="Resubmit All" icon="repeat"
+                                       disabled={!props.requestedStatus.canSubmit || (!loading && data.tilesForStage.length === 0)}
+                                       onClick={() => convertTileStatus({
+                                           variables: {
+                                               pipelineStageId: props.pipelineStage.id,
+                                               currentStatus: props.requestedStatus.option,
+                                               desiredStatus: TilePipelineStatus.Incomplete
+                                           }
+                                       })}/>
+                        )
+                        }
+                    </Mutation>
+                </Menu.Menu>
+            </Menu>
+            <TilesTable pipelineStage={props.pipelineStage}
+                        tiles={tilesForStage}
+                        canSubmit={props.requestedStatus.canSubmit}
+                        loading={loading}
+                        pageCount={pageCount}
+                        workerMap={props.workerMap}
+                        onCursorChanged={props.onCursorChanged}
+            />
 
-                    return (
-                        <Container fluid style={{padding: "20px"}}>
-                            <Menu size="mini" style={{borderBottomWidth: "1px", borderRadius: 0, marginBottom: 0, boxShadow: "none"}}>
-                                <TilePipelineStatusSelect
-                                    statusTypes={TILE_PIPELINE_STATUS_TYPES}
-                                    selectedStatus={this.props.requestedStatus}
-                                    onSelectStatus={(t) => this.props.onRequestedStatusChanged(t)}/>
-                                <Menu.Menu position="right">
-                                    <Mutation mutation={SetTileStatusMutation}>
-                                        {(setTileStatus) => (
-                                            <Menu.Item size="mini" content="Resubmit Page" icon="repeat"
-                                                       disabled={!this.props.requestedStatus.canSubmit || (!loading && data.tilesForStage.length === 0)}
-                                                       onClick={() => setTileStatus({
-                                                           variables: {
-                                                               pipelineStageId: this.props.pipelineStage.id,
-                                                               tileIds: tilesForStage.items.map(t => t.relative_path),
-                                                               status: TilePipelineStatus.Incomplete
-                                                           }
-                                                       })}/>
-                                        )
-                                        }
-                                    </Mutation>
-                                    <Mutation mutation={ConvertTileStatusMutation}>
-                                        {(convertTileStatus) => (
-                                            <Menu.Item size="mini" content="Resubmit All" icon="repeat"
-                                                       disabled={!this.props.requestedStatus.canSubmit || (!loading && data.tilesForStage.length === 0)}
-                                                       onClick={() => convertTileStatus({
-                                                           variables: {
-                                                               pipelineStageId: this.props.pipelineStage.id,
-                                                               currentStatus: this.props.requestedStatus.option,
-                                                               desiredStatus: TilePipelineStatus.Incomplete
-                                                           }
-                                                       })}/>
-                                        )
-                                        }
-                                    </Mutation>
-                                </Menu.Menu>
-                            </Menu>
-                            <TilesTable pipelineStage={this.props.pipelineStage}
-                                        tiles={tilesForStage}
-                                        canSubmit={this.props.requestedStatus.canSubmit}
-                                        loading={loading}
-                                        pageCount={pageCount}
-                                        workerMap={this.props.workerMap}
-                                        onCursorChanged={this.props.onCursorChanged}
-                            />
-
-                        </Container>
-                    );
-                }
-                }
-            </Query>
-        );
-    }
+        </Container>
+    );
 }
