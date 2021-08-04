@@ -27,7 +27,7 @@ export const SetTileStatusMutation = gql`mutation SetTileStatus($pipelineStageId
     lat_x
     lat_y
     lat_z
-    this_stage_status
+    stage_status
   }
 }`;
 
@@ -37,6 +37,6 @@ export const ConvertTileStatusMutation = gql`mutation SetTileStatus($pipelineSta
     lat_x
     lat_y
     lat_z
-    this_stage_status
+    stage_status
   }
 }`;
